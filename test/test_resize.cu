@@ -15,6 +15,10 @@
 using namespace std;
 using namespace cv;
 
+#define HEIGHT  4
+#define WIDTH   4
+#define CHANNEL 3
+
 void processUsingOpenCvCpu(std::string nput_file, std::string output_file);
 //void processUsingOpenCvGpu(std::string input_file, std::string output_file);
 void processUsingCuda(std::string input_file, std::string output_file);
@@ -36,7 +40,7 @@ int main(int argc, char **argv) {
         processUsingCuda(input_file, output_file_Cuda);
     }
 
-    compareImages(output_file_OpenCvCpu, output_file_Cuda, useEpsCheck, perPixelError, globalError);
+    //compareImages(output_file_OpenCvCpu, output_file_Cuda, useEpsCheck, perPixelError, globalError);
 
     return 0;
 }
@@ -100,11 +104,25 @@ void processUsingCuda(std::string input_file, std::string output_file) {
         return;
     }
 
-    //Create output image
-    Size newSize( input.size().width / 4, input.size().height / 4 ); // downscale 4x on both x and y
-    Mat output (newSize, input.type());
+    char data[HEIGHT * WIDTH * CHANNEL];
 
-    downscaleCuda(input, output);
+    for (int i = 0; i < HEIGHT; ++i)
+    {
+        for(int j = 0; j < WIDTH; ++j)
+        {
+            data[i * WIDTH * CHANNEL + j*CHANNEL + 0] = i * WIDTH * CHANNEL + j*CHANNEL + 0;
+            data[i * WIDTH * CHANNEL + j*CHANNEL + 1] = i * WIDTH * CHANNEL + j*CHANNEL + 1;
+            data[i * WIDTH * CHANNEL + j*CHANNEL + 2] = i * WIDTH * CHANNEL + j*CHANNEL + 2;
+        }
+    }
+
+    cv::Mat point_mat(HEIGHT, WIDTH, CV_8UC3, data);
+
+    //Create output image
+    Size newSize( point_mat.size().width / 2, point_mat.size().height / 2 ); // downscale 4x on both x and y
+    Mat output (newSize, point_mat.type());
+
+    downscaleCuda(point_mat, output);
 
     imwrite(output_file, output);
 }
