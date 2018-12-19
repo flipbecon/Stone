@@ -1,10 +1,3 @@
-/*
- * resize.cuh
- *
- *  Created on: Dec 4, 2015
- *      Author: claudiu
- */
-
 #ifndef RESIZE_CUH_
 #define BILATERAL_FILTER_CUH_
 

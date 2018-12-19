@@ -10,7 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include "./Utils/timer.h"
 #include "./Utils/utils.h"
-#include "../src/RESIZE/Resize.cu"
+#include "../src/RESIZE/Resize_.cu"
 
 using namespace std;
 using namespace cv;
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         processUsingCuda(input_file, output_file_Cuda);
     }
 
-    //compareImages(output_file_OpenCvCpu, output_file_Cuda, useEpsCheck, perPixelError, globalError);
+    compareImages(output_file_OpenCvCpu, output_file_Cuda, useEpsCheck, perPixelError, globalError);
 
     return 0;
 }
@@ -97,32 +97,32 @@ void processUsingOpenCvGpu(std::string input_file, std::string output_file) {
 */
 void processUsingCuda(std::string input_file, std::string output_file) {
     //Read input image from the disk
-    cv::Mat input = cv::imread(input_file,CV_LOAD_IMAGE_UNCHANGED);
+    cv::Mat input = cv::imread(input_file, CV_LOAD_IMAGE_UNCHANGED);
     if(input.empty())
     {
         std::cout<<"Image Not Found: "<< input_file << std::endl;
         return;
     }
 
-    char data[HEIGHT * WIDTH * CHANNEL];
+//    char data[HEIGHT * WIDTH * CHANNEL];
+//
+//    for (int i = 0; i < HEIGHT; ++i)
+//    {
+//        for(int j = 0; j < WIDTH; ++j)
+//        {
+//            data[i * WIDTH * CHANNEL + j*CHANNEL + 0] = i * WIDTH * CHANNEL + j*CHANNEL + 0;
+//            data[i * WIDTH * CHANNEL + j*CHANNEL + 1] = i * WIDTH * CHANNEL + j*CHANNEL + 1;
+//            data[i * WIDTH * CHANNEL + j*CHANNEL + 2] = i * WIDTH * CHANNEL + j*CHANNEL + 2;
+//        }
+//    }
 
-    for (int i = 0; i < HEIGHT; ++i)
-    {
-        for(int j = 0; j < WIDTH; ++j)
-        {
-            data[i * WIDTH * CHANNEL + j*CHANNEL + 0] = i * WIDTH * CHANNEL + j*CHANNEL + 0;
-            data[i * WIDTH * CHANNEL + j*CHANNEL + 1] = i * WIDTH * CHANNEL + j*CHANNEL + 1;
-            data[i * WIDTH * CHANNEL + j*CHANNEL + 2] = i * WIDTH * CHANNEL + j*CHANNEL + 2;
-        }
-    }
-
-    cv::Mat point_mat(HEIGHT, WIDTH, CV_8UC3, data);
+//    cv::Mat point_mat(HEIGHT, WIDTH, CV_8UC3, data);
 
     //Create output image
-    Size newSize( point_mat.size().width / 2, point_mat.size().height / 2 ); // downscale 4x on both x and y
-    Mat output (newSize, point_mat.type());
+    Size newSize( input.size().width / 4, input.size().height / 4 ); // downscale 4x on both x and y
+    Mat output (newSize, input.type());
 
-    downscaleCuda(point_mat, output);
+    downscaleCuda(input, output);
 
     imwrite(output_file, output);
 }
